@@ -7,9 +7,9 @@ import re
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-@app.route('/')
-def home():
-    return 'XNXX scraper API is running!'
+# @app.route('/')
+# def home():
+#  return 'XNXX scraper API is running!'
 
 @app.route('/api/search', methods=['GET'])
 def search():

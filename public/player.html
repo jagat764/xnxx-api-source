@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JSK Video Player</title>
+  <style>
+    body {
+      background: #0f0f0f;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: #1b1b1b;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #00000066;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 0 15px #00000055;
+    }
+
+    .loading {
+      font-size: 18px;
+      color: #aaa;
+      margin: 40px 0;
+      text-align: center;
+    }
+
+    a.back {
+      display: block;
+      margin: 30px auto 0;
+      text-align: center;
+      color: #ff4d4d;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    a.back:hover {
+      color: #ff7b7b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="videoTitle">Loading title...</h1>
+    <div class="loading" id="loading">Loading video...</div>
+<video id="player" controls style="display: none; width: 100%; height: 160px; border-radius: 1rem;"></video>
+
+  </div>
+  <a class="back" href="index.html">← Back to search</a>
+
+  <script>
+    const API_BASE = "https://xnxx-api-server.onrender.com";
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoPageURL = urlParams.get('url');
+    const apiURL = `${API_BASE}/api/video?url=${encodeURIComponent(videoPageURL)}`;
+
+    // Try to extract a title from the URL
+    const fallbackTitle = decodeURIComponent(videoPageURL.split('/').pop().replace(/_/g, ' '));
+    document.getElementById('videoTitle').textContent = fallbackTitle;
+
+    async function loadVideo() {
+      try {
+        const res = await fetch(apiURL);
+        const data = await res.json();
+        if (data.url) {
+          const player = document.getElementById('player');
+          player.src = data.url;
+          player.style.display = 'block';
+          document.getElementById('loading').style.display = 'none';
+        } else {
+          document.getElementById('loading').textContent = "Stream not found.";
+        }
+      } catch (err) {
+        console.error("Video fetch error:", err);
+        document.getElementById('loading').textContent = "Failed to load video.";
+      }
+    }
+
+    loadVideo();
+  </script>
+</body>
+</html>

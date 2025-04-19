@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JSK 18+ Streamer</title>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --fg: #fff;
+      --card: #1c1c1c;
+      --input: #2c2c2c;
+      --text: #aaa;
+    }
+
+    body.light {
+      --bg: #f8f8f8;
+      --fg: #111;
+      --card: #fff;
+      --input: #e0e0e0;
+      --text: #444;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      margin: 0;
+      transition: all 0.3s ease;
+    }
+
+    .header, .footer {
+      background: var(--card);
+      padding: 12px;
+      display: flex;
+      gap: 10px;
+      position: sticky;
+      z-index: 10;
+    }
+
+    .header { top: 0; }
+    .footer { bottom: 0; justify-content: space-between; }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    input {
+      flex: 1;
+      background: var(--input);
+      color: var(--fg);
+    }
+
+    button {
+      background: #ff4d4d;
+      color: white;
+      cursor: pointer;
+    }
+
+    .video-list {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .video {
+      background: var(--card);
+      padding: 12px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00000033;
+    }
+
+    .video img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      object-fit: cover;
+    }
+
+    .video-info {
+      text-align: left;
+    }
+
+    .video-info a {
+      color: var(--fg);
+      font-size: 16px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .video-info small {
+      color: var(--text);
+      font-size: 14px;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    .theme-toggle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #ff4d4d;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <input id="searchInput" type="text" placeholder="Search videos..." />
+    <button onclick="search()">Search</button>
+    <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+  </div>
+
+  <div id="videoList" class="video-list"></div>
+
+  <div class="footer">
+    <button onclick="prevPage()">Prev</button>
+    <button onclick="nextPage()">Next</button>
+  </div>
+
+  <script>
+    const API_BASE = "https://xnxx-api-server.onrender.com";
+    let currentPage = 1;
+    let currentQuery = 'milf';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light');
+      }
+      fetchVideos();
+    });
+
+    async function fetchVideos() {
+      const container = document.getElementById('videoList');
+      container.innerHTML = `<div class="loading">Loading videos...</div>`;
+      const url = `${API_BASE}/api/search?q=${encodeURIComponent(currentQuery)}&page=${currentPage}`;
+
+      try {
+        const res = await fetch(url);
+        const videos = await res.json();
+        renderVideos(videos);
+      } catch (err) {
+        console.error("Error fetching videos:", err);
+        container.innerHTML = `<div class="loading" style="color:red;">Failed to load videos.</div>`;
+      }
+    }
+
+    function renderVideos(videos) {
+      const container = document.getElementById('videoList');
+      container.innerHTML = '';
+
+      if (!Array.isArray(videos) || videos.length === 0) {
+        container.innerHTML = `<p class="loading">No videos found.</p>`;
+        return;
+      }
+
+      videos.forEach(v => {
+        const div = document.createElement('div');
+        div.className = 'video';
+        div.innerHTML = `
+          <a href="player.html?url=${encodeURIComponent(v.url)}">
+            <img src="${v.thumbnail}" alt="Thumbnail" />
+          </a>
+          <div class="video-info">
+            <a href="player.html?url=${encodeURIComponent(v.url)}">${v.title || 'No title'}</a>
+            <small>${v.duration || ''} • ${v.quality || ''} • ${v.views || ''}</small>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function search() {
+      currentQuery = document.getElementById('searchInput').value || 'milf';
+      currentPage = 1;
+      fetchVideos();
+    }
+
+    function nextPage() {
+      currentPage++;
+      fetchVideos();
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        fetchVideos();
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+    }
+  </script>
+</body>
+</html>
